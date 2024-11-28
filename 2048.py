@@ -9,11 +9,17 @@ board.margin = 10
 board.cell_spacing = 5
 
 # Initialize the game state variables
-mat = game_logic.start_game()
+mat = game_logic.create_custom_board([
+    [2, 4, 8, 16],
+    [32, 64, 128, 256],
+    [512, 1024, 1024, 0],
+    [0, 0, 0, 0]
+])  # Use the custom board directly
 graph = game_logic.board_to_graph(mat)
 game_over = False
 score = 0
 scores = []
+
 
 def draw_board():
     """Draw the current game board on the UI."""
@@ -42,7 +48,8 @@ def key_press(key):
 
     if game_over:
         if key == 'r':
-            mat = game_logic.start_game()
+            # Restart the game
+            mat = game_logic.start_game()  # Use standard game start logic for restarts
             graph = game_logic.board_to_graph(mat)
             game_over = False
             score = 0
@@ -77,7 +84,7 @@ def key_press(key):
             game_logic.insertion_sort(scores)
             display_scoreboard(scores)
             print("Press 'r' to restart or 'e' to exit.")
-            game_over
+            game_over = True
         elif game_logic.has_valid_moves(mat, graph) == "LOST":
             print("Game Over!")
             scores.append(score)
@@ -96,20 +103,9 @@ def key_press(key):
             game_over = True
 
 
-# Initial draw
-# Create and initialize the custom board directly in 2048.py
-mat = game_logic.create_custom_board([
-    [2, 4, 8, 16],
-    [32, 64, 128, 256],
-    [512, 1024, 2048, 0],
-    [0, 0, 0, 0]
-])
-
-# Initialize the graph for the custom board
-graph = game_logic.board_to_graph(mat)
-
-# Draw the custom board
+# Draw the custom board (initial state)
 draw_board()
 
+# Set up the key press handler and display the board
 board.on_key_press = key_press
 board.show()
