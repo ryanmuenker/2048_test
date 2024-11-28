@@ -1,5 +1,6 @@
 import random
 from collections import defaultdict, deque
+import heapq
 
 # Initialize the game board with two tiles
 def start_game():
@@ -63,31 +64,48 @@ def bfs_search_value(mat, graph, target=2048):
 
     return "CONTINUE"
 
-
-def compress(mat):
-    """Compress the board by moving all non-zero values to the left."""
+def compress_with_priority(mat):
     changed = False
     new_mat = []
-    for row in mat:
-        filtered = [num for num in row if num != 0]
-        new_row = filtered + [0] * (4 - len(filtered))
-        if new_row != row:
-            changed = True
-        new_mat.append(new_row)
+    for i in range(4):
+        new_mat.append([0] * 4)
+    for i in range(4):
+        pq = []
+        for j in range(4):
+            if mat[i][j] != 0:
+                heapq.heappush(pq, (j, mat[i][j])) 
+
+        pos = 0
+        while pq:
+            idx, value = heapq.heappop(pq)
+            new_mat[i][pos] = value
+            if pos != idx:
+                changed = True
+            pos += 1
     return new_mat, changed
 
-
-def merge(mat):
-    """Merge adjacent tiles with the same value."""
+def merge_with_priority(mat):
     changed = False
-    score = 0
-    for row in mat:
-        for j in range(3):
-            if row[j] != 0 and row[j] == row[j + 1]:
-                row[j] *= 2
-                score += row[j]
-                row[j + 1] = 0
+    score = 0  
+    for i in range(4):
+        pq = []
+        for j in range(4):
+            if mat[i][j] != 0:
+                heapq.heappush(pq, (j, mat[i][j]))
+
+        new_row = [0] * 4
+        pos = 0
+        while pq:
+            idx, value = heapq.heappop(pq)
+            if pos < 3 and new_row[pos] == value: 
+                new_row[pos] *= 2
+                score += new_row[pos] 
                 changed = True
+            else:
+                if new_row[pos] != 0:  
+                    pos += 1
+                new_row[pos] = value
+        mat[i] = new_row
     return mat, changed, score
 
 
@@ -103,9 +121,9 @@ def transpose(mat):
 
 def move_left(mat):
     """Move tiles left."""
-    mat, changed1 = compress(mat)
-    mat, changed2, score = merge(mat)
-    mat, _ = compress(mat)
+    mat, changed1 = compress_with_priority(mat)
+    mat, changed2, score = merge_with_priority(mat)
+    mat, _ = compress_with_priority(mat)
     return mat, changed1 or changed2, score
 
 
@@ -142,3 +160,14 @@ def insertion_sort(arr):
             arr[j + 1] = arr[j]
             j -= 1
         arr[j + 1] = key_item
+
+def create_custom_board(values):
+    # Validate the input
+    if len(values) != 4 or any(len(row) != 4 for row in values):
+        raise ValueError("The board must be a 4x4 list of integers.")
+    for row in values:
+        if any(not isinstance(cell, int) or cell < 0 for cell in row):
+            raise ValueError("All tiles must be non-negative integers.")
+    
+    # Return the custom board
+    return [row[:] for row in values]
