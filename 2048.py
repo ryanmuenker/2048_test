@@ -97,6 +97,19 @@ def key_press(key):
 
 
 # Initial draw
+# Create and initialize the custom board directly in 2048.py
+mat = game_logic.create_custom_board([
+    [2, 4, 8, 16],
+    [32, 64, 128, 256],
+    [512, 1024, 2048, 0],
+    [0, 0, 0, 0]
+])
+
+# Initialize the graph for the custom board
+graph = game_logic.board_to_graph(mat)
+
+# Draw the custom board
 draw_board()
+
 board.on_key_press = key_press
 board.show()
